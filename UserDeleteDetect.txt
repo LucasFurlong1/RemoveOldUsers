@@ -1,0 +1,14 @@
+﻿$namearray = @() #initialize array
+Get-ChildItem -Path C:\Users -Force | Where {-not ($_.Attributes -band 2) -and -not ($_.Attributes -band 1) -and -not ($_.Name -eq "wisetest") -and -not ($_.Name -eq "defaultuser0") -and $_.LastWriteTime -lt (Get-Date).AddDays(-90)} | ForEach-Object{($namearray += $_.Name)}
+# ^^ Go to User folder -> Find all user folders that are not windows generated and are older than 90 days -> add them to the array ^^
+"`n"
+"Detecting user profiles"
+"`n"
+foreach($user in Get-WMIObject -Class Win32_UserProfile){ #foreach user profile in the system
+    foreach($name in $namearray){ #foreach EMPLID in the array
+        if($user.LocalPath -eq "C:\Users\$($name)"){ #Compare LocalPath with EMPLID from array
+            return "False" #user profiles detected
+        }
+    }
+}
+return "True" #user profiles not detected
